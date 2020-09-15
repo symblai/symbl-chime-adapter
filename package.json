@@ -7,7 +7,7 @@
   "module": "build/module/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/charlie-symbl/symbl-chime-adapter.git"
+    "url": "git+https://https://github.com/symblai/symbl-chime-adapter"
   },
   "license": "Apache-2.0",
   "keywords": [],
