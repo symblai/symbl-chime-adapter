@@ -1,5 +1,5 @@
 {
-  "name": "@symbl/symbl-chime-adapter",
+  "name": "symbl-chime-adapter",
   "version": "1.0.0",
   "description": "Symbl's conversational AI adapter for Chime Javascript SDK",
   "main": "build/main/index.js",
