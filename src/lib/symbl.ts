@@ -289,7 +289,7 @@ export class Caption {
         if (data.punctuated.transcript) {
             this.message = this.truncateMessage(data.punctuated.transcript);
         }
-        symblEvents.emit('caption', 'captionCreated', this);
+        symblEvents.emit('caption', 'onCaptionCreated', this);
 
     }
     /**
