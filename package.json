@@ -1,6 +1,6 @@
 {
   "name": "symbl-chime-adapter",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Symbl's conversational AI adapter for Chime Javascript SDK",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
