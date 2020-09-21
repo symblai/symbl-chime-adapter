@@ -425,7 +425,7 @@ class SymblSocket {
     } = null;
     observer: {
         captionObservers: {
-            onClosedCaptioningToggled: { (callback: (isEnabled: boolean, caption?: Caption) => void): void }[],
+            onCaptioningToggled: { (callback: (isEnabled: boolean, caption?: Caption) => void): void }[],
             onCaptionCreated: (callback: any) => void,
             onCaptionUpdated: { (callback: (caption: Caption) => void): void }[],
         },
