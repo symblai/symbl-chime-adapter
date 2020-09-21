@@ -1,13 +1,13 @@
 {
   "name": "symbl-chime-adapter",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "description": "Symbl's conversational AI adapter for Chime Javascript SDK",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
   "module": "build/module/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://https://github.com/symblai/symbl-chime-adapter"
+    "url": "https://github.com/symblai/symbl-chime-adapter"
   },
   "license": "Apache-2.0",
   "keywords": [],
@@ -105,8 +105,8 @@
     ]
   },
   "bugs": {
-    "url": "https://github.com/charlie-symbl/symbl-chime-adapter/issues"
+    "url": "https://github.com/symblai/symbl-chime-adapter/issues"
   },
-  "homepage": "https://github.com/charlie-symbl/symbl-chime-adapter#readme",
+  "homepage": "https://github.com/symblai/symbl-chime-adapter#readme",
   "author": "Charlie Beckwith"
 }
