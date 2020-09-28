@@ -310,7 +310,6 @@ export class Caption {
             this.textTrack.mode = Caption.captionsEnabled ? 'showing' : 'hidden';
 
         }
-        console.log('Set video element', this.videoElement);
     }
     /**
      * Sets the element that captions should be added to
