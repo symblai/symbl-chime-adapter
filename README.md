@@ -1,8 +1,5 @@
 # symbl-chime-adapter
-
-Symbl's conversational AI adapter for Amazon Chime SDK
-
-`npm install symbl-chime-adapter`
+Symbl's realtime websockets adapter for Amazon Chime.
 
 ## Set Up for Symbl
 
