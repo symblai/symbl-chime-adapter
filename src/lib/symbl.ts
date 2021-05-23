@@ -3,6 +3,8 @@ var captionNum = 0;
 var ws: WebSocket = null;
 var symblSocket: SymblSocket = null;
 const insights: any = [];
+const topics : any = [];
+const trackers : any = [];
 
 const hashCode = function(s: string): number {
   var h = 0, l = s.length, i = 0;
@@ -16,6 +18,9 @@ export class SymblEvents {
   captionHandlers: any = []; /** Handlers for the caption events **/
   insightHandlers: any = []; /** Handlers for the insight events **/
   transcriptHandlers: any = []; /** Handlers for the transcript events **/
+  topicHandlers : any = []; /** Handlers for the topic events **/
+  trackerHandlers : any = []; /** Handlers for the tracker events **/
+  
   constructor() { }
   getHandlerArr(handlerType: string): any {
     let handlerArr;
@@ -25,7 +30,14 @@ export class SymblEvents {
       handlerArr = this.insightHandlers;
     } else if (handlerType === 'transcript') {
       handlerArr = this.transcriptHandlers;
-    } else {
+    }
+    else if (handlerType === 'topic') {
+      handlerArr = this.topicHandlers;
+    }
+    else if (handlerType === 'tracker') {
+      handlerArr = this.trackerHandlers;
+    }
+    else {
       throw new Error(`Unhandled SymblEvent handler type ${handlerType}`);
     }
     return handlerArr;
@@ -136,20 +148,30 @@ const transcript = new Transcript();
 export class Insight {
   data: {
     assignee: {
-      name?: string, /** Name of the user the action item has been assigned to **/
-      userId: string, /** id of the user the action item is assigned to **/
-      id: string,
-    },
-    hints?: [{ key: string, value: number }],
-    from?: { id: string, userId: string }, /** User from whom the aciton item was assigned **/
-    tags?: {
-      text: string, /** Tag text **/
-      type: string, /** Type of tag **/
-    },
-    id: string, /** ID of the insight **/
-    text: string, /** Insight text **/
-    type: string, /** Type of the insight - action_item, question, follow_up **/
-    confidence?: number, /** Accuracy quotient of the insight **/
+      name?: string; /** Name of the user the action item has been assigned to **/
+      userId: string; /** id of the user the action item is assigned to **/
+      id: string;
+  };
+  payload: {
+      content: string;
+      contentType: string;
+  }; 
+  hints?: [{
+      key: string;
+      value: number;
+  }];
+  from?: {
+      id: string;
+      userId: string;
+  }; /** User from whom the aciton item was assigned **/
+  tags?: {
+      text: string; /** Tag text **/
+      type: string; /** Type of tag **/
+  };
+  id: string; /** ID of the insight **/
+  //text: string; /** Insight text **/
+  type: string; /** Type of the insight - action_item, question, follow_up **/
+  confidence?: number; /** Accuracy quotient of the insight **/
   } = null;
   id: string = null; /** Insight ID specific to the object **/
   _element: HTMLDivElement = null;
@@ -184,7 +206,7 @@ export class Insight {
         console.warn('Insight has no valid type?', this.data);
         break;
     }
-    let content = this.data.text;
+    let content = this.data.payload.content;
     const insightElementStr = `<div class="card text-white ${color} mb-3" style="max-width: 18rem; margin: 10px;">
             <div class="card-header">${type}</div>
             <div class="card-body">
@@ -237,7 +259,7 @@ export class Insight {
    * @return Insight content
    */
   get text(): string {
-    return this.data.text;
+    return this.data.payload.content;
   }
   /**
    * Element that is added to the container via the add fuction
@@ -262,6 +284,124 @@ export class Insight {
   }
   remove() {
     this.element.remove();
+  }
+}
+
+export class Topic {
+  data: {
+    id: string;
+    messageReferences:[{
+        id:string;
+        relation:string;
+    }]
+    phrases: string;
+    rootWords: [{
+        text: string; /** Tag text **/
+    }];
+    score: number; /** ID of the topic **/
+    type: string; /** Type of the topic - action_item, question, follow_up **/
+} = null;
+  id: string = null; /** Insight ID specific to the object **/
+  _element: HTMLSpanElement = null;
+
+  constructor(data: any) {
+    this.data = null;
+    this.id = null; /** Insight ID specific to the object **/
+    this._element = null;
+    this.data = data;
+    this.id = '' + hashCode(this.data.phrases);
+    console.info('Creating Topic', data, topics.includes(data));
+    symblEvents.emit('topic', 'onTopicCreated', this);
+  }
+  createElement(): HTMLSpanElement {
+        const content = this.data.phrases;
+
+        let element = document.createElement('span');
+        element.className = 'topics-tab';
+        element.style.fontSize = '12px';
+        element.style.color = 'rgb(1,0,0)'
+        element.style.display = 'inline-block'
+        element.style.margin = '0px 3px'
+        element.style.verticalAlign = 'middle'
+        element.style.cursor = 'default'
+        element.innerText = content;
+        element.id = this.id;
+        return element;      
+  }
+
+  get type(): string { // action_item || question || follow_up
+    return this.data.type;
+  }
+
+   get topicId() {
+    return this.data.id;
+  }
+
+   get score() {
+    return this.data.score;
+  }
+  get phrases() {
+    return this.data.phrases;
+  }
+
+
+}
+
+
+export class Tracker {
+  data: {
+    name: string;
+    matches:[{
+        type:string;
+        value:string;
+        messageRefs:[{
+              id?: string;
+              text?: string;
+              offset?: number;
+            }];
+    }];
+    insightRefs:  [{
+          text?: string;
+          type?: string;
+          offset?: number;
+        }];
+} = null;
+  id: string = null; /** Insight ID specific to the object **/
+  _element: HTMLDivElement = null;
+
+  constructor(data: any) {
+    this.data = null;
+    this.id = null; /** Insight ID specific to the object **/
+    this._element = null;
+    this.data = data;
+    this.id = '' + hashCode(this.data.name);
+    console.info('Creating Tracker', data, trackers.includes(data));
+    symblEvents.emit('tracker', 'onTrackerCreated', this);
+  }
+  createElement(): HTMLElement {
+    let name = this.data.name;
+ 
+    let element = document.createElement('span');
+    element.className = 'trackers-tab';
+    element.style.fontSize = '12px';
+    element.style.color = 'rgb(1,0,0)'
+    element.style.display = 'inline-block'
+    element.style.margin = '0px 3px'
+    element.style.verticalAlign = 'middle'
+    element.style.cursor = 'default'
+    element.innerText = name;
+    element.id = this.id;
+    return element;      
+  }
+
+  get name() {
+    return this.data.name;
+  }
+  get matches() {
+    return this.data.matches;
+  }
+  get elementId() {
+    return this.id;
   }
 }
 
@@ -448,6 +588,7 @@ class SymblSocket {
     confidenceThreshold: number, /** Minimum confidence value for an insight to be detected **/
     languageCode: string,
     insightsEnabled: boolean
+    trackers:Array<{name:string,vocabulary:Array<string>}>;
   } = null;
   observer: {
     captionObservers: {
@@ -458,6 +599,12 @@ class SymblSocket {
     insightObservers: {
       onInsightResult: { (callback: () => void): void }
     },
+    topicObservers: {
+      onTopicResult: { (callback: () => void): void }
+    },
+    trackerObservers: {
+      onTrackerResult: { (callback: () => void): void }
+    },
     transcriptObservers: {
       onTranscriptCreated: { (callback: (transcript: Transcript) => void): void }
     }
@@ -465,7 +612,8 @@ class SymblSocket {
   constructor(config: {
     confidenceThreshold: number,
     languageCode: string,
-    insightsEnabled: boolean
+    insightsEnabled: boolean,
+    trackers:Array<{name:string,vocabulary:Array<string>}>;
   }, credentials: {
     attendeeId: string, /** UUID of the Chime attendee **/
     userName?: string, /** Name of the Chime Attendee **/
@@ -487,6 +635,18 @@ class SymblSocket {
     if (data.type === 'insight_response') {
       data.insights.forEach((insight: any) => {
         new Insight(insight);
+      });
+      return;
+    }
+    if (data.type === 'topic_response') {
+      data.topics.forEach((topic: any) => {
+        new Topic(topic);
+      });
+      return;
+    }
+    if (data.type === 'tracker_response') {
+      data.trackers.forEach((tracker: any) => {
+        new Tracker(tracker);
       });
       return;
     }
@@ -557,6 +717,7 @@ class SymblSocket {
     ws.send(JSON.stringify({
       "type": "start_request",
       "insightTypes": this.config.insightsEnabled ? ["question", "action_item"] : [],
+      "trackers": this.config.trackers,
       "config": {
         "confidenceThreshold": this.config.confidenceThreshold || 0.5,
         // "timezoneOffset": 480, // Your timezone offset from UTC in minutes
@@ -658,10 +819,12 @@ export class Symbl {
     confidenceThreshold: number,/** Minimum confidence needed for an insight to be created **/
     languageCode: string, /** language code for the meeting - can be `en-US, en-AU, en-GB, es-ES, de-DE, nl-NL, it-IT, fr-FR, fr-CA, ja-JP` **/
     insightsEnabled: boolean, /** Whether to enable real-time insights **/
+    trackers:Array<{name:string,vocabulary:Array<string>}>;
   } = {// Symbl Config
       confidenceThreshold: 0.5,
       languageCode: 'en-US',
       insightsEnabled: true,
+      trackers:[]
     };
   url: string = null; /** Realtime API endpoint **/
   meetingId: string = null; /** UUID of the Chime meeting **/
@@ -676,6 +839,7 @@ export class Symbl {
       confidenceThreshold: number,/** Minimum confidence needed for an insight to be created **/
       languageCode: string, /** language code for the meeting - can be `en-US, en-AU, en-GB, es-ES, de-DE, nl-NL, it-IT, fr-FR, fr-CA, ja-JP` **/
       insightsEnabled: boolean, /** Whether to enable real-time insights **/
+      trackers:Array<{name:string,vocabulary:Array<string>}>;
     }
   ) {
     this.credentials = chime;
@@ -731,6 +895,16 @@ export class Symbl {
 
   subscribeToTranscriptEvents(handler: { onTranscriptCreated: (callback: any) => void; }): any {
     return symblEvents.subscribe('transcript', handler);
+  }
+  subscribeToTopicEvents(handler: {
+    onTopicCreated: (callback: any) => void;
+  }): any {
+    return symblEvents.subscribe('topic', handler);
+  }
+  subscribeToTrackerEvents(handler: {
+    onTrackerCreated: (callback: any) => void;
+  }): any {
+    return symblEvents.subscribe('tracker', handler);
   }
   /**
    * Get's Symbl's conversationId
