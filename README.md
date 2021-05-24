@@ -4,9 +4,9 @@
 
 [![websocket](https://img.shields.io/badge/symbl-websocket-brightgreen)](https://docs.symbl.ai/docs/streamingapi/overview/introduction)
 
-Symbl's APIs empower developers to enable: 
+Symbl's APIs empower developers to enable:
 
-- **Real-time** analysis of free-flowing discussions to automatically surface highly relevant summary discussion topics, contextual insights, suggestive action items, follow-ups, decisions, and questions.\
+- **Real-time** analysis of free-flowing discussions to automatically surface highly relevant summary discussion topics, contextual insights, suggestive action items, follow-ups, decisions, and questions, Topics and Trackers\
 - **Voice APIs** that makes it easy to add AI-powered conversational intelligence to either [telephony][telephony] or [WebSocket][websocket] interfaces.
 - **Conversation APIs** that provide a REST interface for managing and processing your conversation data.
 - **Summary UI** with a fully customizable and editable reference experience that indexes a searchable transcript and shows generated actionable insights, topics, timecodes, and speaker information.
@@ -25,9 +25,9 @@ Enable Symbl.ai's real-time WebSocket's adapter for Amazon Chime
 
 ## Setup
 
-Sign up for a free account at Symbl.ai [here][signup]. If you are new to Symbl.a, check out the [introduction][api_overview] on the docs or feel free to try out APIs with [Postman][postman]. 
+Sign up for a free account at Symbl.ai [here][signup]. If you are new to Symbl.a, check out the [introduction][api_overview] on the docs or feel free to try out APIs with [Postman][postman].
 
-## Integration 
+## Integration
 
 ### Install symbl-chime-adapter
 
@@ -49,7 +49,7 @@ Create a .env file in demos/browser and demos/serverless/src that includes your 
 SYMBL_APP_ID=<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>
 SYMBL_APP_SECRET=<xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx>
 ```
-The App ID and App Secret are used to authenticate your session with Symbl by generating an access token. 
+The App ID and App Secret are used to authenticate your session with Symbl by generating an access token.
 
 Your App ID and Secret should not be shared or posted publicly.
 
@@ -78,7 +78,7 @@ const res = await fetch(`https://api.symbl.ai/oauth2/token:generate`, {
       }),
     });
     accessToken = await res.json();
-    
+
     return response(200, 'application/json', JSON.stringify({
     JoinInfo: {
       Meeting: meeting,
@@ -113,6 +113,8 @@ The Symbl constructor takes two parameters:
 | confidenceThreshold | double  | default: 0.5 - Minimum required confidence for insight to be recognized.                                                    |
 | languageCode        | array   | Array of comma separated strings. Valid language codes en-US, en-GB, en-AU, it-IT, nl-NL, fr-FR, fr-CA, de-DE, es-US, ja-JP |
 | insightsEnabled     | boolean | default: true - True if insights should be generated for conversation.                                                      |
+| trackers            | array   | default: [] - To enable trackers add to the Tracker list set of name and phrases to be found in a conversation.             |
+| topics              |         | Always enabled - Topics should be generated for conversation.                                                               |
 
  Whether or not to generate insights.
 
@@ -127,6 +129,16 @@ The Symbl constructor takes two parameters:
           confidenceThreshold: 0.5,
           languageCode: 'en-US',
           insightsEnabled: true,
+          trackers: [            //Various dictionaries of differnt name values and vocabulary values can be passed here
+                        {
+                            name: "COVID-19",
+                            vocabulary: [
+                                "social distancing",
+                                "cover your face with mask",
+                                "vaccination"
+                            ]
+                        }
+                    ],
       }
   );
   // subscribe to realtime event publishers (see below)
@@ -135,11 +147,13 @@ The Symbl constructor takes two parameters:
 ## Subscribe to Realtime Events
 Learn how to subscribe to Symbl’s conversational insights and transcription.
 
-There are three different event types that you can subscribe through with Symbl’s Conversational AI Adapter for Chime.
+There are five different event types that you can subscribe through with Symbl’s Conversational AI Adapter for Chime.
 
 * Closed Captions
 * Transcripts
 * Insights
+* Topics
+* Trackers
 
 
 ### Closed Captions
@@ -171,7 +185,7 @@ const captioningHandler = {
     },
     onCaptionUpdated: (caption: Caption) => {
         const activeVideoElement = getActiveVideoElement() as HTMLVideoElement;
-        
+
         caption.setVideoElement(activeVideoElement);
     },
 };
@@ -215,14 +229,14 @@ When an insight event is emitted from the onInsightCreated handler, you can use 
 ``` typescript
 const insightHandler = {
     onInsightCreated: (insight: Insight) => {
-    
+
         // Creates a predesigned insight element
         const element = insight.createElement();
-        
+
         // Customize any styling
         element.classList.add('mx-auto');
         element.style.width = '98%';
-        
+
         /** OR create your own element
         insight.element = document.createElement('div');
         insight.element.innerHTML = `<div style="width: auto; height: 400px">
@@ -235,10 +249,10 @@ const insightHandler = {
                                  </h2>
                               </div>`;          
         **/
-        
+
         // Retrieve container you wish to add insights to.
         const insightContainer = document.getElementById('receive-insight');
-        
+
         // Call add on the insight object to add it to DIV
         insight.add(insightContainer);
     }
@@ -246,6 +260,122 @@ const insightHandler = {
 // Subscribe to realtime insight events using the handler created above
 this.symbl.subscribeToInsightEvents(insightHandler);
 ```
+
+
+### Realtime Topics
+Realtime topics are generated as Symbl processes the conversation in your video chat platform.
+
+When a topic is detected by Symbl and the onTopicCreated event is emitted, an Insight object is passed to the callback function provided in the Topic handler.
+
+The Topic class holds data about the topic generated.
+
+#### Topic Class Attributes
+
+| Field   | Type   | Description     |
+|---------|--------|-----------------|
+| phrases | string | Topic name      |
+| score   | number | Topic score     |
+
+
+### Handler
+
+The Symbl adapter exposes a handler function, subscribeToTopicEvents, that has a callback function onTopicCreated.
+
+Topics are enabled by default.
+
+
+Subscribing to the Topic publisher is achieved by passing a handler to the subscribeToTopicEvents function of your Symbl instance.
+
+#### Example
+
+When an topic event is emitted from the onTopicCreated handler, you can use the Topic object returned and either use the createElement function to create a default element or you can use the data included in the Topic object returned in the handlers callback to create your own element, capture the data and store as a metric, etc…
+
+``` typescript
+        const topicHandler = {
+            onTopicCreated: (topic: Topic) => {
+                //Random font color for new topic
+                const content = topic.phrases;
+                const score = topic.score;
+                fontSize = score * 40 + 8;
+                let element = topic.createElement();
+                element.innerText = content;
+                element.style.fontSize=String(fontSize)+'px'
+                //In case you have a Topics document you can add this element with differnt font size of topic based on the score
+                document.getElementById('Topics').appendChild(element);
+
+            }
+        };
+        // Subscribe to realtime tracker events using the handler created above
+        this.symbl.subscribeToTopicEvents(topicHandler);
+```
+
+### Realtime Trackers
+Realtime trackers are generated as Symbl processes the conversation in your video chat platform.
+
+When an Tracker is detected by Symbl and the onTrackerCreated event is emitted, an Tracker object is passed to the callback function provided in the Tracker handler.
+
+The Tracker class holds data about the tracker generated.
+
+#### Tracker Class Attributes
+
+| Field   | Type   | Description          |
+|---------|--------|----------------------|
+| name    | string | Tracker name         |
+| matches | array  | Tracker text matches |
+
+
+### Handler
+
+The Symbl adapter exposes a handler function, subscribeToTrackerEvents, that has a callback function onTrackerCreated.
+
+Trackers are enabled by adding a list of name and vocabulary pharses in the form of disctionaries to be found in a conversation.
+
+``` typescript
+new Symbl(chimeConfiguration, {trackers:[
+        {
+            name: "COVID-19",
+            vocabulary: [
+                "social distancing",
+                "cover your face with mask",
+                "vaccination"
+            ]
+        }
+    ],});
+```
+
+Subscribing to the Tracker publisher is achieved by passing a handler to the subscribeToTrackerEvents function of your Symbl instance.
+
+#### Example
+
+When an tracker event is emitted from the onTrackerCreated handler, you can use the Tracker object returned and either use the createElement function to create a default element or you can use the data included in the Tracker object returned in the handlers callback to create your own element, capture the data and store as a metric, etc…
+
+``` typescript
+        const TrackerHandler = {
+            onTrackerCreated: (topic: Tracker) => {
+                const name = tracker.name;
+                const matches = tracker.matches;
+                let currentCategoryHit=0;
+                //Check the number of non-empty messageRefs in current tracker
+                for (let i = 0; i < matches.length; i++) {
+                    if (matches[i]["messageRefs"].length > 0) {
+                        currentCategoryHit+=1
+                    }
+                }
+                let element = tracker.createElement();
+                element.innerText = name + ':' + String(currentCategoryHit);
+                element.style.fontSize = String(12 + currentCategoryHit)+ 'px';
+                 //In case you have a Trackers document you can add this element with differnt
+                 //font size of tracker based on the number of messageRefs to know how many times the tracker was foud in the converation  
+                document.getElementById('Trackers').appendChild(element);
+
+            }
+        };
+        // Subscribe to realtime tracker events using the handler created above
+        this.symbl.subscribeToTrackerEvents(trackerHandler);
+```
+
+
+
 
 
 ## Realtime Transcripts
@@ -282,13 +412,13 @@ To generate a meeting summary URL, you need only to call the getSummaryUrlfuncti
 ```typescript
 const meetingSummaryUrl = await symbl.getSummaryUrl();
 ```
-## Conclusion 
+## Conclusion
 
-Your application now enables Symbl.ai to run on top of Amazon Chime's adapter. 
+Your application now enables Symbl.ai to run on top of Amazon Chime's adapter.
 
-## Community 
+## Community
 
- If you are having trouble, check out our [API overview](api_overview) or test your endpoints in [Postman](postman).If you have any questions, feel free to reach out to us at devrelations@symbl.ai or through our [Community Slack][slack] or our [developer community][developer_community]. 
+ If you are having trouble, check out our [API overview](api_overview) or test your endpoints in [Postman](postman).If you have any questions, feel free to reach out to us at devrelations@symbl.ai or through our [Community Slack][slack] or our [developer community][developer_community].
 
 This guide is actively developed, and we love to hear from you! Please feel free to [create an issue][issues] or [open a pull request][pulls] with your questions, comments, suggestions and feedback. If you liked our integration guide, please star our repo!
 
