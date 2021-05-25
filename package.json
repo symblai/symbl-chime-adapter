@@ -1,6 +1,6 @@
 {
-  "name": "symbl-chime-adapter",
-  "version": "1.0.11",
+  "name": "@symblai/symbl-chime-adapter",
+  "version": "1.1.1",
   "description": "Symbl's conversational AI adapter for Chime Javascript SDK",
   "main": "build/main/index.js",
   "typings": "build/main/index.d.ts",
@@ -108,5 +108,5 @@
     "url": "https://github.com/symblai/symbl-chime-adapter/issues"
   },
   "homepage": "https://github.com/symblai/symbl-chime-adapter#readme",
-  "author": "Charlie Beckwith"
+  "author": "Guy Sapir"
 }
