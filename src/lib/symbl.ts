@@ -43,7 +43,7 @@ export class SymblEvents {
     return handlerArr;
   }
   /**
-   * Subscribe to one of three posible insight handlers
+   * Subscribe to one of three possible insight handlers
    * @param  type    handler type - can be `caption`, `insight`, and `transcript`
    * @param  handler callback function that will be fired when the corresponding event is emitted
    * @return         function that removes the handler.
@@ -124,7 +124,7 @@ export class TranscriptItem {
     },
     duration: { /** Duration of the transcription **/
       startTime: string, /** Start time of audio being transcribed **/
-      endTime: string, /** End time of the audio being transcriped **/
+      endTime: string, /** End time of the audio being transcribed **/
     },
     type: string,
     dismissed: boolean,
@@ -163,7 +163,7 @@ export class Insight {
   from?: {
       id: string;
       userId: string;
-  }; /** User from whom the aciton item was assigned **/
+  }; /** User from whom the action item was assigned **/
   tags?: {
       text: string; /** Tag text **/
       type: string; /** Type of tag **/
@@ -262,7 +262,7 @@ export class Insight {
     return this.data.payload.content;
   }
   /**
-   * Element that is added to the container via the add fuction
+   * Element that is added to the container via the add function
    * @return Insight Element
    */
   get element(): HTMLDivElement {
@@ -871,7 +871,7 @@ export class Symbl {
   /**
    * Subscribes to closed captioning events
    * @param  handler contains events that may be subscribed to
-   * @return         function that ubsubscribes hanlder
+   * @return         function that unsubscribes handler
    */
   subscribeToCaptioningEvents(handler: {
     onCaptioningToggled: (callback: any) => void,
