@@ -3,14 +3,14 @@ var captionNum = 0;
 var ws: WebSocket = null;
 var symblSocket: SymblSocket = null;
 const insights: any = [];
-const topics : any = [];
-const trackers : any = [];
+const topics: any = [];
+const trackers: any = [];
 
-const hashCode = function(s: string): number {
-  var h = 0, l = s.length, i = 0;
-  if (l > 0)
-    while (i < l)
-      h = (h << 5) - h + s.charCodeAt(i++) | 0;
+const hashCode = function (s: string): number {
+  var h = 0,
+    l = s.length,
+    i = 0;
+  if (l > 0) while (i < l) h = ((h << 5) - h + s.charCodeAt(i++)) | 0;
   return h;
 };
 
@@ -18,10 +18,10 @@ export class SymblEvents {
   captionHandlers: any = []; /** Handlers for the caption events **/
   insightHandlers: any = []; /** Handlers for the insight events **/
   transcriptHandlers: any = []; /** Handlers for the transcript events **/
-  topicHandlers : any = []; /** Handlers for the topic events **/
-  trackerHandlers : any = []; /** Handlers for the tracker events **/
-  
-  constructor() { }
+  topicHandlers: any = []; /** Handlers for the topic events **/
+  trackerHandlers: any = []; /** Handlers for the tracker events **/
+
+  constructor() {}
   getHandlerArr(handlerType: string): any {
     let handlerArr;
     if (handlerType === 'caption') {
@@ -30,14 +30,11 @@ export class SymblEvents {
       handlerArr = this.insightHandlers;
     } else if (handlerType === 'transcript') {
       handlerArr = this.transcriptHandlers;
-    }
-    else if (handlerType === 'topic') {
+    } else if (handlerType === 'topic') {
       handlerArr = this.topicHandlers;
-    }
-    else if (handlerType === 'tracker') {
+    } else if (handlerType === 'tracker') {
       handlerArr = this.trackerHandlers;
-    }
-    else {
+    } else {
       throw new Error(`Unhandled SymblEvent handler type ${handlerType}`);
     }
     return handlerArr;
@@ -59,7 +56,7 @@ export class SymblEvents {
             let removedHandler = this.captionHandlers.splice(index, 1);
             return removedHandler;
           }
-        }
+        };
       }
     } catch (err) {
       console.log(err);
@@ -74,7 +71,7 @@ export class SymblEvents {
           if (handler[event]) {
             handler[event](...args);
           }
-        })
+        });
       }
     } catch (err) {
       console.error(err);
@@ -84,12 +81,9 @@ export class SymblEvents {
 }
 const symblEvents = new SymblEvents();
 
-
 export class Transcript {
   lines: Array<TranscriptItem> = []; /** Full transcript with timestamps **/
-  constructor() {
-
-  }
+  constructor() {}
   addLine(transcriptItem: TranscriptItem): void {
     this.lines.unshift(transcriptItem);
   }
@@ -107,29 +101,30 @@ export class TranscriptItem {
   message: string = null; /** Content of the transcript **/
   userName: string = null; /** Name of the transcript speaker **/
   id: string = null; /** Transcript id **/
-  userId: string = null; /** Email address of the speaker for the transcript item **/
+  userId: string =
+    null; /** Email address of the speaker for the transcript item **/
   timeStamp: Date = new Date(); /** Time when the transcript was received **/
   dismissed: boolean;
   constructor(data: {
-    isFinal: true,
-    payload: any,
+    isFinal: true;
+    payload: any;
     punctuated: {
-      transcript: string,
-      type: 'recognition_result',
-    },
+      transcript: string;
+      type: 'recognition_result';
+    };
     user: {
-      id: string, /** User ID **/
-      name: string, /** Transcript item user name **/
-      userId: string,
-    },
-    duration: { /** Duration of the transcription **/
-      startTime: string, /** Start time of audio being transcribed **/
-      endTime: string, /** End time of the audio being transcribed **/
-    },
-    type: string,
-    dismissed: boolean,
-  },
-  ) {
+      id: string /** User ID **/;
+      name: string /** Transcript item user name **/;
+      userId: string;
+    };
+    duration: {
+      /** Duration of the transcription **/
+      startTime: string /** Start time of audio being transcribed **/;
+      endTime: string /** End time of the audio being transcribed **/;
+    };
+    type: string;
+    dismissed: boolean;
+  }) {
     if (data && data.isFinal !== true) {
       throw new Error('Message is not final transcript response');
     }
@@ -144,34 +139,35 @@ export class TranscriptItem {
 
 const transcript = new Transcript();
 
-
 export class Insight {
   data: {
     assignee: {
-      name?: string; /** Name of the user the action item has been assigned to **/
-      userId: string; /** id of the user the action item is assigned to **/
+      name?: string /** Name of the user the action item has been assigned to **/;
+      userId: string /** id of the user the action item is assigned to **/;
       id: string;
-  };
-  payload: {
+    };
+    payload: {
       content: string;
       contentType: string;
-  }; 
-  hints?: [{
-      key: string;
-      value: number;
-  }];
-  from?: {
+    };
+    hints?: [
+      {
+        key: string;
+        value: number;
+      }
+    ];
+    from?: {
       id: string;
       userId: string;
-  }; /** User from whom the action item was assigned **/
-  tags?: {
-      text: string; /** Tag text **/
-      type: string; /** Type of tag **/
-  };
-  id: string; /** ID of the insight **/
-  //text: string; /** Insight text **/
-  type: string; /** Type of the insight - action_item, question, follow_up **/
-  confidence?: number; /** Accuracy quotient of the insight **/
+    } /** User from whom the action item was assigned **/;
+    tags?: {
+      text: string /** Tag text **/;
+      type: string /** Type of tag **/;
+    };
+    id: string /** ID of the insight **/;
+    //text: string; /** Insight text **/
+    type: string /** Type of the insight - action_item, question, follow_up **/;
+    confidence?: number /** Accuracy quotient of the insight **/;
   } = null;
   id: string = null; /** Insight ID specific to the object **/
   _element: HTMLDivElement = null;
@@ -193,7 +189,7 @@ export class Insight {
         footer = `Assignee: ${this.data.assignee.name}`;
         break;
       case 'question':
-        type = 'Question'
+        type = 'Question';
         color = 'bg-success';
         footer = `Assignee: ${this.data.assignee.name}`;
         break;
@@ -213,7 +209,7 @@ export class Insight {
                 <p class="card-text">${content}</p>
                 <p class="card-text"><small class="text">${footer}</small></p>
             </div>
-        </div>`
+        </div>`;
     const element = document.createElement('div');
     element.innerHTML = insightElementStr;
     element.id = this.id;
@@ -224,12 +220,13 @@ export class Insight {
    * Hints are applicable to `follow up` action items. They include information about whether it was a definitive
    * @return [Array] follow up hints
    */
-  get hints(): [{ key: string, value: number | boolean }] | void {
+  get hints(): [{ key: string; value: number | boolean }] | void {
     if (this.data && this.data.hints) {
       return this.data.hints;
     }
   }
-  get type(): string { // action_item || question || follow_up
+  get type(): string {
+    // action_item || question || follow_up
     return this.data.type;
   }
 
@@ -237,14 +234,14 @@ export class Insight {
    * The assignee of the insight
    * @return {assignee}
    */
-  get assignee(): { name?: string, userId: string, id: string, } {
+  get assignee(): { name?: string; userId: string; id: string } {
     return this.data.assignee;
   }
   /**
    * User that assigned the action item.
    * @return [description]
    */
-  get from(): { name?: string, id: string, userId: string } {
+  get from(): { name?: string; id: string; userId: string } {
     return this.data.from;
   }
   /**
@@ -290,17 +287,21 @@ export class Insight {
 export class Topic {
   data: {
     id: string;
-    messageReferences:[{
-        id:string;
-        relation:string;
-    }]
+    messageReferences: [
+      {
+        id: string;
+        relation: string;
+      }
+    ];
     phrases: string;
-    rootWords: [{
-        text: string; /** Tag text **/
-    }];
-    score: number; /** ID of the topic **/
-    type: string; /** Type of the topic - action_item, question, follow_up **/
-} = null;
+    rootWords: [
+      {
+        text: string /** Tag text **/;
+      }
+    ];
+    score: number /** ID of the topic **/;
+    type: string /** Type of the topic - action_item, question, follow_up **/;
+  } = null;
   id: string = null; /** Insight ID specific to the object **/
   _element: HTMLSpanElement = null;
 
@@ -314,58 +315,62 @@ export class Topic {
     symblEvents.emit('topic', 'onTopicCreated', this);
   }
   createElement(): HTMLSpanElement {
-        const content = this.data.phrases;
+    const content = this.data.phrases;
 
-        let element = document.createElement('span');
-        element.className = 'topics-tab';
-        element.style.fontSize = '12px';
-        element.style.color = 'rgb(1,0,0)'
-        element.style.display = 'inline-block'
-        element.style.margin = '0px 3px'
-        element.style.verticalAlign = 'middle'
-        element.style.cursor = 'default'
-        element.innerText = content;
-        element.id = this.id;
-        return element;      
+    let element = document.createElement('span');
+    element.className = 'topics-tab';
+    element.style.fontSize = '12px';
+    element.style.color = 'rgb(1,0,0)';
+    element.style.display = 'inline-block';
+    element.style.margin = '0px 3px';
+    element.style.verticalAlign = 'middle';
+    element.style.cursor = 'default';
+    element.innerText = content;
+    element.id = this.id;
+    return element;
   }
 
-  get type(): string { // action_item || question || follow_up
+  get type(): string {
+    // action_item || question || follow_up
     return this.data.type;
   }
 
-   get topicId() {
+  get topicId() {
     return this.data.id;
   }
 
-   get score() {
+  get score() {
     return this.data.score;
   }
   get phrases() {
     return this.data.phrases;
   }
-
-
 }
-
 
 export class Tracker {
   data: {
     name: string;
-    matches:[{
-        type:string;
-        value:string;
-        messageRefs:[{
-              id?: string;
-              text?: string;
-              offset?: number;
-            }];
-    }];
-    insightRefs:  [{
-          text?: string;
-          type?: string;
-          offset?: number;
-        }];
-} = null;
+    matches: [
+      {
+        type: string;
+        value: string;
+        messageRefs: [
+          {
+            id?: string;
+            text?: string;
+            offset?: number;
+          }
+        ];
+      }
+    ];
+    insightRefs: [
+      {
+        text?: string;
+        type?: string;
+        offset?: number;
+      }
+    ];
+  } = null;
   id: string = null; /** Insight ID specific to the object **/
   _element: HTMLDivElement = null;
 
@@ -380,18 +385,18 @@ export class Tracker {
   }
   createElement(): HTMLElement {
     let name = this.data.name;
- 
+
     let element = document.createElement('span');
     element.className = 'trackers-tab';
     element.style.fontSize = '12px';
-    element.style.color = 'rgb(1,0,0)'
-    element.style.display = 'inline-block'
-    element.style.margin = '0px 3px'
-    element.style.verticalAlign = 'middle'
-    element.style.cursor = 'default'
+    element.style.color = 'rgb(1,0,0)';
+    element.style.display = 'inline-block';
+    element.style.margin = '0px 3px';
+    element.style.verticalAlign = 'middle';
+    element.style.cursor = 'default';
     element.innerText = name;
     element.id = this.id;
-    return element;      
+    return element;
   }
 
   get name() {
@@ -408,33 +413,39 @@ export class Tracker {
 var websocketOpened: boolean = false;
 export class Caption {
   data: {
-    isFinal: boolean, false
+    isFinal: boolean;
+    false;
     payload: {
       raw: {
-        alternatives: [{
-          confidence: number,
-          transcript: string,
-          words: Array<any>
-        }],
-      },
-    },
+        alternatives: [
+          {
+            confidence: number;
+            transcript: string;
+            words: Array<any>;
+          }
+        ];
+      };
+    };
     punctuated: {
-      transcript: string,
-    },
-    type: string // "recognition_result"
+      transcript: string;
+    };
+    type: string; // "recognition_result"
     user: {
-      id: string,
-      userId: string,
-      name: string,
-    },
+      id: string;
+      userId: string;
+      name: string;
+    };
   } = null;
-  userId: "865ca7f0-a880-73b6-4f6c-0c5a7e19bcac" = null;
-  element?: HTMLDivElement = null; /** Optional element used to superimpose captions over rather than the HTMLVideoElement **/
+  userId: '865ca7f0-a880-73b6-4f6c-0c5a7e19bcac' = null;
+  element?: HTMLDivElement =
+    null; /** Optional element used to superimpose captions over rather than the HTMLVideoElement **/
   name: string = '';
   captionNum: number = 0; /** Caption number **/
   textTrack: TextTrack = null; /** Text track used for closed captioning **/
-  _videoElementId: string = null; /** ID of the HTMLVideoElement the CC track will be added to **/
-  videoElement: HTMLVideoElement = null; /** Video element the closed-caption track is added to **/
+  _videoElementId: string =
+    null; /** ID of the HTMLVideoElement the CC track will be added to **/
+  videoElement: HTMLVideoElement =
+    null; /** Video element the closed-caption track is added to **/
   message: string = null; /** Caption content **/
   contentSpan: string = null; /** Finalized caption content **/
   static captionsEnabled: boolean = true;
@@ -447,7 +458,7 @@ export class Caption {
     // implement
   }
   constructor(data: any) {
-    this.data = data
+    this.data = data;
     this.captionNum = captionNum;
     captionNum++;
     this.setName(data.user.name);
@@ -455,7 +466,6 @@ export class Caption {
       this.message = this.truncateMessage(data.punctuated.transcript);
     }
     symblEvents.emit('caption', 'onCaptionCreated', this);
-
   }
   /**
    * Sets which Video element to superimpose captions over
@@ -467,13 +477,16 @@ export class Caption {
     this.videoElement.style.transform = '';
     if (this.videoElement.textTracks.length === 0) {
       this.textTrack = this.videoElement.addTextTrack('subtitles');
-      let cue = new VTTCue(this.videoElement.currentTime, this.videoElement.currentTime + 1, this.message);
+      let cue = new VTTCue(
+        this.videoElement.currentTime,
+        this.videoElement.currentTime + 1,
+        this.message
+      );
       this.textTrack.mode = Caption.captionsEnabled ? 'showing' : 'hidden';
       this.textTrack.addCue(cue);
     } else {
       this.textTrack = this.videoElement.textTracks[0];
       this.textTrack.mode = Caption.captionsEnabled ? 'showing' : 'hidden';
-
     }
   }
   /**
@@ -487,7 +500,7 @@ export class Caption {
       this._videoElementId = videoElementId;
       this.setVideoElement(_videoElement);
     } else {
-      console.error('Could not retrieve Video Element by Id.')
+      console.error('Could not retrieve Video Element by Id.');
     }
   }
   /**
@@ -507,11 +520,20 @@ export class Caption {
     if (!message) {
       return '';
     }
-    let truncatedMessage = message.split(' ').splice(-13 * 2).join(' ');
+    let truncatedMessage = message
+      .split(' ')
+      .splice(-13 * 2)
+      .join(' ');
     if (truncatedMessage.length > 72 * 2) {
-      truncatedMessage = message.split(' ').splice(-12 * 2).join(' ');
+      truncatedMessage = message
+        .split(' ')
+        .splice(-12 * 2)
+        .join(' ');
     } else if (truncatedMessage.length < 60 * 2) {
-      truncatedMessage = message.split(' ').splice(-14 * 2).join(' ');
+      truncatedMessage = message
+        .split(' ')
+        .splice(-14 * 2)
+        .join(' ');
     }
     return truncatedMessage;
   }
@@ -530,13 +552,16 @@ export class Caption {
       if (this.textTrack.cues.length > 0) {
         cue = this.textTrack.cues[this.textTrack.cues.length - 1] as VTTCue;
       } else {
-        cue = new VTTCue(this.videoElement.currentTime, this.videoElement.currentTime + 1, this.message);
+        cue = new VTTCue(
+          this.videoElement.currentTime,
+          this.videoElement.currentTime + 1,
+          this.message
+        );
         cue.startTime = this.videoElement.currentTime;
       }
       cue.endTime = this.videoElement.currentTime + 1;
       cue.text = this.message;
       this.textTrack.addCue(cue);
-
     }
     symblEvents.emit('caption', 'onCaptionUpdated', this);
   }
@@ -556,20 +581,19 @@ export class Caption {
   kill(killNow: boolean): void {
     currentCaption = null;
     if (this.element) {
-      this.element.classList.add('fade-out')
+      this.element.classList.add('fade-out');
       // this.element.className = this.element.className + ' fade-out';
       if (killNow) {
         this.element.style.display = 'none';
         this.element.remove();
       } else {
         setTimeout(() => {
-          this.element.style.display = "none";
+          this.element.style.display = 'none';
           this.element.remove();
         }, 1000);
       }
     }
   }
-
 }
 
 var ssCount = 0;
@@ -580,55 +604,62 @@ class SymblSocket {
   ws: WebSocket = null; /** The websocket connection **/
   connected: boolean = true; /** Whether the socket connection is open **/
   closed: boolean = false; /** Whether the socket connection is closed **/
-  requestStarted: boolean = false; /** Whether the initial start request has been made **/
+  requestStarted: boolean =
+    false; /** Whether the initial start request has been made **/
   credentials: any = false;
   _conversationId: string = null;
   gainNode: GainNode = null;
   config: {
-    confidenceThreshold: number, /** Minimum confidence value for an insight to be detected **/
-    languageCode: string,
-    insightsEnabled: boolean
-    trackers:Array<{name:string,vocabulary:Array<string>}>;
+    confidenceThreshold: number /** Minimum confidence value for an insight to be detected **/;
+    languageCode: string;
+    insightsEnabled: boolean;
+    trackers: Array<{ name: string; vocabulary: Array<string> }>;
   } = null;
   observer: {
     captionObservers: {
-      onCaptioningToggled: { (callback: (isEnabled: boolean, caption?: Caption) => void): void }[],
-      onCaptionCreated: (callback: any) => void,
-      onCaptionUpdated: { (callback: (caption: Caption) => void): void }[],
-    },
+      onCaptioningToggled: {
+        (callback: (isEnabled: boolean, caption?: Caption) => void): void;
+      }[];
+      onCaptionCreated: (callback: any) => void;
+      onCaptionUpdated: { (callback: (caption: Caption) => void): void }[];
+    };
     insightObservers: {
-      onInsightResult: { (callback: () => void): void }
-    },
+      onInsightResult: { (callback: () => void): void };
+    };
     topicObservers: {
-      onTopicResult: { (callback: () => void): void }
-    },
+      onTopicResult: { (callback: () => void): void };
+    };
     trackerObservers: {
-      onTrackerResult: { (callback: () => void): void }
-    },
+      onTrackerResult: { (callback: () => void): void };
+    };
     transcriptObservers: {
-      onTranscriptCreated: { (callback: (transcript: Transcript) => void): void }
-    }
+      onTranscriptCreated: {
+        (callback: (transcript: Transcript) => void): void;
+      };
+    };
   };
-  constructor(config: {
-    confidenceThreshold: number,
-    languageCode: string,
-    insightsEnabled: boolean,
-    trackers:Array<{name:string,vocabulary:Array<string>}>;
-  }, credentials: {
-    attendeeId: string, /** UUID of the Chime attendee **/
-    userName?: string, /** Name of the Chime Attendee **/
-    meetingId: string, /** UUID of the Chime meeting **/
-    meeting?: string /** Name of the Chime meeting **/
-  }) {
+  constructor(
+    config: {
+      confidenceThreshold: number;
+      languageCode: string;
+      insightsEnabled: boolean;
+      trackers: Array<{ name: string; vocabulary: Array<string> }>;
+    },
+    credentials: {
+      attendeeId: string /** UUID of the Chime attendee **/;
+      userName?: string /** Name of the Chime Attendee **/;
+      meetingId: string /** UUID of the Chime meeting **/;
+      meeting?: string /** Name of the Chime meeting **/;
+    }
+  ) {
     this.id = ssCount++;
     this.config = config;
     this.credentials = credentials;
     this.userName = this.credentials.userName;
     const self = this;
-    ws.onmessage = event => self.onMessage(event);
-    ws.onclose = event => self.onClose(event);
-    ws.onerror = event => self.onError(event);
-
+    ws.onmessage = (event) => self.onMessage(event);
+    ws.onclose = (event) => self.onClose(event);
+    ws.onerror = (event) => self.onError(event);
   }
   parseMessage(message: any) {
     const data = JSON.parse(message);
@@ -714,25 +745,31 @@ class SymblSocket {
       return;
     }
     this.requestStarted = true;
-    ws.send(JSON.stringify({
-      "type": "start_request",
-      "insightTypes": this.config.insightsEnabled ? ["question", "action_item"] : [],
-      "trackers": this.config.trackers,
-      "config": {
-        "confidenceThreshold": this.config.confidenceThreshold || 0.5,
-        // "timezoneOffset": 480, // Your timezone offset from UTC in minutes
-        "languageCode": this.config.languageCode ? this.config.languageCode : "en-US",
-        "speechRecognition": {
-          "encoding": "LINEAR16",
-          "sampleRateHertz": 44100 // Make sure the correct sample rate is provided for best results
+    ws.send(
+      JSON.stringify({
+        type: 'start_request',
+        insightTypes: this.config.insightsEnabled
+          ? ['question', 'action_item']
+          : [],
+        trackers: this.config.trackers,
+        config: {
+          confidenceThreshold: this.config.confidenceThreshold || 0.5,
+          // "timezoneOffset": 480, // Your timezone offset from UTC in minutes
+          languageCode: this.config.languageCode
+            ? this.config.languageCode
+            : 'en-US',
+          speechRecognition: {
+            encoding: 'LINEAR16',
+            sampleRateHertz: 44100, // Make sure the correct sample rate is provided for best results
+          },
+          meetingTitle: this.credentials.meeting, // Set meeting name
         },
-        "meetingTitle": this.credentials.meeting, // Set meeting name
-      },
-      "speaker": {
-        "userId": this.credentials.attendeeId,
-        "name": this.credentials.userName,
-      }
-    }));
+        speaker: {
+          userId: this.credentials.attendeeId,
+          name: this.credentials.userName,
+        },
+      })
+    );
     const handleSuccess = (stream: any) => {
       const AudioContext = window.AudioContext;
       const context = new AudioContext();
@@ -744,7 +781,8 @@ class SymblSocket {
       processor.connect(context.destination);
       processor.onaudioprocess = (e: any) => {
         // convert to 16-bit payload
-        const inputData = e.inputBuffer.getChannelData(0) || new Float32Array(this.bufferSize);
+        const inputData =
+          e.inputBuffer.getChannelData(0) || new Float32Array(this.bufferSize);
         const targetBuffer = new Int16Array(inputData.length);
         for (let index = inputData.length; index > 0; index--) {
           targetBuffer[index] = 32767 * Math.min(1, inputData[index]);
@@ -756,7 +794,8 @@ class SymblSocket {
       };
     };
 
-    navigator.mediaDevices.getUserMedia({ audio: true, video: false })
+    navigator.mediaDevices
+      .getUserMedia({ audio: true, video: false })
       .then(handleSuccess);
   }
   mute(isMuted: boolean) {
@@ -781,9 +820,11 @@ class SymblSocket {
       return;
     }
     this.requestStarted = false;
-    ws.send(JSON.stringify({
-      "type": "stop_request"
-    }));
+    ws.send(
+      JSON.stringify({
+        type: 'stop_request',
+      })
+    );
   }
   close(): Promise<string> {
     console.info('Symbl closing');
@@ -792,54 +833,55 @@ class SymblSocket {
         ws.addEventListener('close', (e: Event) => {
           console.info('Symbl Connection Closed', e);
           resolve('Closed');
-        })
+        });
         ws.close();
       } else {
         reject('Failed to close websocket');
       }
-    })
-
+    });
   }
 }
 
 export class Symbl {
-  static ACCESS_TOKEN: string = null; /** Access token generated using Symbl App ID and Secret **/
+  static ACCESS_TOKEN: string =
+    null; /** Access token generated using Symbl App ID and Secret **/
   static events: SymblEvents = symblEvents;
   static transcripts: Transcript = transcript;
   static state: string = 'DISCONNECTED'; /** State of Symbl's connectors **/
   public credentials: {
-    attendeeId: string,
-    userName: string,
-    meetingId: string,
-    meeting: string,
+    attendeeId: string;
+    userName: string;
+    meetingId: string;
+    meeting: string;
   };
   public meeting: any = null;
   isMuted: boolean = false; /** Whether the user is on mute **/
   config?: {
-    confidenceThreshold: number,/** Minimum confidence needed for an insight to be created **/
-    languageCode: string, /** language code for the meeting - can be `en-US, en-AU, en-GB, es-ES, de-DE, nl-NL, it-IT, fr-FR, fr-CA, ja-JP` **/
-    insightsEnabled: boolean, /** Whether to enable real-time insights **/
-    trackers:Array<{name:string,vocabulary:Array<string>}>;
-  } = {// Symbl Config
-      confidenceThreshold: 0.5,
-      languageCode: 'en-US',
-      insightsEnabled: true,
-      trackers:[]
-    };
+    confidenceThreshold: number /** Minimum confidence needed for an insight to be created **/;
+    languageCode: string /** language code for the meeting - can be `en-US, en-AU, en-GB, es-ES, de-DE, nl-NL, it-IT, fr-FR, fr-CA, ja-JP` **/;
+    insightsEnabled: boolean /** Whether to enable real-time insights **/;
+    trackers: Array<{ name: string; vocabulary: Array<string> }>;
+  } = {
+    // Symbl Config
+    confidenceThreshold: 0.5,
+    languageCode: 'en-US',
+    insightsEnabled: true,
+    trackers: [],
+  };
   url: string = null; /** Realtime API endpoint **/
   meetingId: string = null; /** UUID of the Chime meeting **/
   constructor(
     chime: {
-      attendeeId: string, /** UUID of the Chime attendee **/
-      userName: string, /** Name of the Chime Attendee **/
-      meetingId: string, /** UUID of the Chime meeting **/
-      meeting: string /** Name of the Chime meeting **/
+      attendeeId: string /** UUID of the Chime attendee **/;
+      userName: string /** Name of the Chime Attendee **/;
+      meetingId: string /** UUID of the Chime meeting **/;
+      meeting: string /** Name of the Chime meeting **/;
     },
     config?: {
-      confidenceThreshold: number,/** Minimum confidence needed for an insight to be created **/
-      languageCode: string, /** language code for the meeting - can be `en-US, en-AU, en-GB, es-ES, de-DE, nl-NL, it-IT, fr-FR, fr-CA, ja-JP` **/
-      insightsEnabled: boolean, /** Whether to enable real-time insights **/
-      trackers:Array<{name:string,vocabulary:Array<string>}>;
+      confidenceThreshold: number /** Minimum confidence needed for an insight to be created **/;
+      languageCode: string /** language code for the meeting - can be `en-US, en-AU, en-GB, es-ES, de-DE, nl-NL, it-IT, fr-FR, fr-CA, ja-JP` **/;
+      insightsEnabled: boolean /** Whether to enable real-time insights **/;
+      trackers: Array<{ name: string; vocabulary: Array<string> }>;
     }
   ) {
     this.credentials = chime;
@@ -859,7 +901,6 @@ export class Symbl {
     if (config) {
       this.config = config;
     }
-
   }
   /**
    * Toggle closed captioning on or off.
@@ -874,11 +915,10 @@ export class Symbl {
    * @return         function that unsubscribes handler
    */
   subscribeToCaptioningEvents(handler: {
-    onCaptioningToggled: (callback: any) => void,
-    onCaptionCreated: (callback: any) => void,
-    onCaptionUpdated: (callback: any) => void,
-  }
-  ): any {
+    onCaptioningToggled: (callback: any) => void;
+    onCaptionCreated: (callback: any) => void;
+    onCaptionUpdated: (callback: any) => void;
+  }): any {
     return symblEvents.subscribe('caption', handler);
   }
 
@@ -893,7 +933,9 @@ export class Symbl {
     return symblEvents.subscribe('insight', handler);
   }
 
-  subscribeToTranscriptEvents(handler: { onTranscriptCreated: (callback: any) => void; }): any {
+  subscribeToTranscriptEvents(handler: {
+    onTranscriptCreated: (callback: any) => void;
+  }): any {
     return symblEvents.subscribe('transcript', handler);
   }
   subscribeToTopicEvents(handler: {
@@ -912,7 +954,9 @@ export class Symbl {
    */
   get conversationId(): string {
     if (!symblSocket) {
-      throw new Error('Cannot retrieve conversation ID. Symbl is not connected.');
+      throw new Error(
+        'Cannot retrieve conversation ID. Symbl is not connected.'
+      );
     }
     return symblSocket.conversationId;
   }
@@ -1004,17 +1048,20 @@ export class Symbl {
    * @return Promise that resolves the Meeting Summary URL.
    */
   async getSummaryUrl(): Promise<string> {
-    const res = await fetch(`https://api.symbl.ai/v1/conversations/${this.conversationId}/experiences`, {
-      method: "post",
-      headers: {
-        "Content-Type": "application/json",
-        "x-api-key": Symbl.ACCESS_TOKEN,
-      },
-      mode: "cors",
-      body: JSON.stringify({
-        name: "verbose-text-summary"
-      })
-    });
+    const res = await fetch(
+      `https://api.symbl.ai/v1/conversations/${this.conversationId}/experiences`,
+      {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': Symbl.ACCESS_TOKEN,
+        },
+        mode: 'cors',
+        body: JSON.stringify({
+          name: 'verbose-text-summary',
+        }),
+      }
+    );
     const data = await res.json();
     return Promise.resolve(data.url);
   }
