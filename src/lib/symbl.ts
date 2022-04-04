@@ -1,416 +1,32 @@
-var currentCaption: Caption = null;
-var captionNum = 0;
-var ws: WebSocket = null;
-var symblSocket: SymblSocket = null;
+/* eslint-disable functional/no-throw-statement */
+/* eslint-disable @typescript-eslint/no-inferrable-types */
+/* eslint-disable functional/immutable-data */
+/* eslint-disable functional/functional-parameters */
+/* eslint-disable functional/prefer-readonly-type */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable functional/no-return-void */
+/* eslint-disable functional/no-this-expression */
+/* eslint-disable functional/no-class */
+/* eslint-disable functional/no-let */
+import { Insight } from './Insight';
+import { SymblEvents } from './SymblEvents';
+import { Topic } from './Topic';
+import { Tracker } from './Tracker';
+import { Transcript, TranscriptItem } from './Transcript';
+
+let currentCaption: Caption = null;
+let captionNum = 0;
+let ws: WebSocket = null;
+let symblSocket: SymblSocket = null;
 const insights: any = [];
 const topics: any = [];
 const trackers: any = [];
 
-const hashCode = function (s: string): number {
-  var h = 0,
-    l = s.length,
-    i = 0;
-  if (l > 0) while (i < l) h = ((h << 5) - h + s.charCodeAt(i++)) | 0;
-  return h;
-};
-
-export class SymblEvents {
-  captionHandlers: any = []; /** Handlers for the caption events **/
-  insightHandlers: any = []; /** Handlers for the insight events **/
-  transcriptHandlers: any = []; /** Handlers for the transcript events **/
-  topicHandlers: any = []; /** Handlers for the topic events **/
-  trackerHandlers: any = []; /** Handlers for the tracker events **/
-
-  constructor() {}
-  getHandlerArr(handlerType: string): any {
-    let handlerArr;
-    if (handlerType === 'caption') {
-      handlerArr = this.captionHandlers;
-    } else if (handlerType === 'insight') {
-      handlerArr = this.insightHandlers;
-    } else if (handlerType === 'transcript') {
-      handlerArr = this.transcriptHandlers;
-    } else if (handlerType === 'topic') {
-      handlerArr = this.topicHandlers;
-    } else if (handlerType === 'tracker') {
-      handlerArr = this.trackerHandlers;
-    } else {
-      throw new Error(`Unhandled SymblEvent handler type ${handlerType}`);
-    }
-    return handlerArr;
-  }
-  /**
-   * Subscribe to one of three possible insight handlers
-   * @param  type    handler type - can be `caption`, `insight`, and `transcript`
-   * @param  handler callback function that will be fired when the corresponding event is emitted
-   * @return         function that removes the handler.
-   */
-  subscribe(type: string, handler: any): any {
-    try {
-      const handlerArr = this.getHandlerArr(type);
-      if (handlerArr) {
-        handlerArr.push(handler);
-        return () => {
-          let index = this.captionHandlers.indexOf(handler);
-          if (index > -1) {
-            let removedHandler = this.captionHandlers.splice(index, 1);
-            return removedHandler;
-          }
-        };
-      }
-    } catch (err) {
-      console.log(err);
-      throw new Error(`Error subscribing to SymblEvent type ${type} ${err}`);
-    }
-  }
-  emit(type: string, event: string, ...args: any[]) {
-    try {
-      const handlerArr = this.getHandlerArr(type);
-      if (handlerArr) {
-        handlerArr.forEach((handler: any) => {
-          if (handler[event]) {
-            handler[event](...args);
-          }
-        });
-      }
-    } catch (err) {
-      console.error(err);
-      throw new Error(`Error emitting event type ${type} ${err}`);
-    }
-  }
-}
 const symblEvents = new SymblEvents();
-
-export class Transcript {
-  lines: Array<TranscriptItem> = []; /** Full transcript with timestamps **/
-  constructor() {}
-  addLine(transcriptItem: TranscriptItem): void {
-    this.lines.unshift(transcriptItem);
-  }
-  printAll(): string {
-    let content = '';
-    for (let line of this.lines) {
-      content = content + `${line.userName}: ${line.message}\n`;
-    }
-    // console.log('Transcript\n', content);
-    return content;
-  }
-}
-
-export class TranscriptItem {
-  message: string = null; /** Content of the transcript **/
-  userName: string = null; /** Name of the transcript speaker **/
-  id: string = null; /** Transcript id **/
-  userId: string =
-    null; /** Email address of the speaker for the transcript item **/
-  timeStamp: Date = new Date(); /** Time when the transcript was received **/
-  dismissed: boolean;
-  constructor(data: {
-    isFinal: true;
-    payload: any;
-    punctuated: {
-      transcript: string;
-      type: 'recognition_result';
-    };
-    user: {
-      id: string /** User ID **/;
-      name: string /** Transcript item user name **/;
-      userId: string;
-    };
-    duration: {
-      /** Duration of the transcription **/
-      startTime: string /** Start time of audio being transcribed **/;
-      endTime: string /** End time of the audio being transcribed **/;
-    };
-    type: string;
-    dismissed: boolean;
-  }) {
-    if (data && data.isFinal !== true) {
-      throw new Error('Message is not final transcript response');
-    }
-
-    this.message = data.punctuated.transcript;
-    this.userName = data.user.name;
-    this.id = data.user.id;
-    this.userId = data.user.userId;
-    symblEvents.emit('transcript', 'onTranscriptCreated', this);
-  }
-}
-
 const transcript = new Transcript();
 
-export class Insight {
-  data: {
-    assignee: {
-      name?: string /** Name of the user the action item has been assigned to **/;
-      userId: string /** id of the user the action item is assigned to **/;
-      id: string;
-    };
-    payload: {
-      content: string;
-      contentType: string;
-    };
-    hints?: [
-      {
-        key: string;
-        value: number;
-      }
-    ];
-    from?: {
-      id: string;
-      userId: string;
-    } /** User from whom the action item was assigned **/;
-    tags?: {
-      text: string /** Tag text **/;
-      type: string /** Type of tag **/;
-    };
-    id: string /** ID of the insight **/;
-    //text: string; /** Insight text **/
-    type: string /** Type of the insight - action_item, question, follow_up **/;
-    confidence?: number /** Accuracy quotient of the insight **/;
-  } = null;
-  id: string = null; /** Insight ID specific to the object **/
-  _element: HTMLDivElement = null;
+let websocketOpened = false;
 
-  constructor(data: any) {
-    this.data = data;
-    this.id = '' + hashCode(data.text + data.confidence);
-    console.info('Creating insight', data, insights.includes(data));
-    symblEvents.emit('insight', 'onInsightCreated', this);
-  }
-  createElement(): HTMLDivElement {
-    let type = '';
-    let color = 'bg-dark';
-    let footer = '';
-    switch (this.data.type) {
-      case 'action_item':
-        type = 'Action Item';
-        color = 'bg-warning';
-        footer = `Assignee: ${this.data.assignee.name}`;
-        break;
-      case 'question':
-        type = 'Question';
-        color = 'bg-success';
-        footer = `Assignee: ${this.data.assignee.name}`;
-        break;
-      case 'follow_up':
-        type = 'Follow Up';
-        color = 'bg-info';
-        footer = `Assignee: ${this.data.assignee.name}`;
-        break;
-      default:
-        console.warn('Insight has no valid type?', this.data);
-        break;
-    }
-    let content = this.data.payload.content;
-    const insightElementStr = `<div class="card text-white ${color} mb-3" style="max-width: 18rem; margin: 10px;">
-            <div class="card-header">${type}</div>
-            <div class="card-body">
-                <p class="card-text">${content}</p>
-                <p class="card-text"><small class="text">${footer}</small></p>
-            </div>
-        </div>`;
-    const element = document.createElement('div');
-    element.innerHTML = insightElementStr;
-    element.id = this.id;
-    this.element = element;
-    return element;
-  }
-  /**
-   * Hints are applicable to `follow up` action items. They include information about whether it was a definitive
-   * @return [Array] follow up hints
-   */
-  get hints(): [{ key: string; value: number | boolean }] | void {
-    if (this.data && this.data.hints) {
-      return this.data.hints;
-    }
-  }
-  get type(): string {
-    // action_item || question || follow_up
-    return this.data.type;
-  }
-
-  /**
-   * The assignee of the insight
-   * @return {assignee}
-   */
-  get assignee(): { name?: string; userId: string; id: string } {
-    return this.data.assignee;
-  }
-  /**
-   * User that assigned the action item.
-   * @return [description]
-   */
-  get from(): { name?: string; id: string; userId: string } {
-    return this.data.from;
-  }
-  /**
-   * ID of the conversational insight generated in the conversation
-   * @return ID of the insight
-   */
-  get insightId(): string {
-    return this.data.id;
-  }
-  /**
-   * Content of the insight.
-   * @return Insight content
-   */
-  get text(): string {
-    return this.data.payload.content;
-  }
-  /**
-   * Element that is added to the container via the add function
-   * @return Insight Element
-   */
-  get element(): HTMLDivElement {
-    return this._element;
-  }
-  /**
-   * Sets the element for the insight
-   * @param  element [HTMLDivElement] HTML
-   * @return         [description]
-   */
-  set element(element: HTMLDivElement) {
-    this._element = element;
-  }
-  add(container: HTMLElement = null) {
-    if (container && this.element) {
-      container.append(this.element);
-      container.scroll(0, 1000000);
-    }
-  }
-  remove() {
-    this.element.remove();
-  }
-}
-
-export class Topic {
-  data: {
-    id: string;
-    messageReferences: [
-      {
-        id: string;
-        relation: string;
-      }
-    ];
-    phrases: string;
-    rootWords: [
-      {
-        text: string /** Tag text **/;
-      }
-    ];
-    score: number /** ID of the topic **/;
-    type: string /** Type of the topic - action_item, question, follow_up **/;
-  } = null;
-  id: string = null; /** Insight ID specific to the object **/
-  _element: HTMLSpanElement = null;
-
-  constructor(data: any) {
-    this.data = null;
-    this.id = null; /** Insight ID specific to the object **/
-    this._element = null;
-    this.data = data;
-    this.id = '' + hashCode(this.data.phrases);
-    console.info('Creating Topic', data, topics.includes(data));
-    symblEvents.emit('topic', 'onTopicCreated', this);
-  }
-  createElement(): HTMLSpanElement {
-    const content = this.data.phrases;
-
-    let element = document.createElement('span');
-    element.className = 'topics-tab';
-    element.style.fontSize = '12px';
-    element.style.color = 'rgb(1,0,0)';
-    element.style.display = 'inline-block';
-    element.style.margin = '0px 3px';
-    element.style.verticalAlign = 'middle';
-    element.style.cursor = 'default';
-    element.innerText = content;
-    element.id = this.id;
-    return element;
-  }
-
-  get type(): string {
-    // action_item || question || follow_up
-    return this.data.type;
-  }
-
-  get topicId() {
-    return this.data.id;
-  }
-
-  get score() {
-    return this.data.score;
-  }
-  get phrases() {
-    return this.data.phrases;
-  }
-}
-
-export class Tracker {
-  data: {
-    name: string;
-    matches: [
-      {
-        type: string;
-        value: string;
-        messageRefs: [
-          {
-            id?: string;
-            text?: string;
-            offset?: number;
-          }
-        ];
-      }
-    ];
-    insightRefs: [
-      {
-        text?: string;
-        type?: string;
-        offset?: number;
-      }
-    ];
-  } = null;
-  id: string = null; /** Insight ID specific to the object **/
-  _element: HTMLDivElement = null;
-
-  constructor(data: any) {
-    this.data = null;
-    this.id = null; /** Insight ID specific to the object **/
-    this._element = null;
-    this.data = data;
-    this.id = '' + hashCode(this.data.name);
-    console.info('Creating Tracker', data, trackers.includes(data));
-    symblEvents.emit('tracker', 'onTrackerCreated', this);
-  }
-  createElement(): HTMLElement {
-    let name = this.data.name;
-
-    let element = document.createElement('span');
-    element.className = 'trackers-tab';
-    element.style.fontSize = '12px';
-    element.style.color = 'rgb(1,0,0)';
-    element.style.display = 'inline-block';
-    element.style.margin = '0px 3px';
-    element.style.verticalAlign = 'middle';
-    element.style.cursor = 'default';
-    element.innerText = name;
-    element.id = this.id;
-    return element;
-  }
-
-  get name() {
-    return this.data.name;
-  }
-  get matches() {
-    return this.data.matches;
-  }
-  get elementId() {
-    return this.id;
-  }
-}
-
-var websocketOpened: boolean = false;
 export class Caption {
   data: {
     isFinal: boolean;
@@ -439,8 +55,8 @@ export class Caption {
   userId: '865ca7f0-a880-73b6-4f6c-0c5a7e19bcac' = null;
   element?: HTMLDivElement =
     null; /** Optional element used to superimpose captions over rather than the HTMLVideoElement **/
-  name: string = '';
-  captionNum: number = 0; /** Caption number **/
+  name = '';
+  captionNum = 0; /** Caption number **/
   textTrack: TextTrack = null; /** Text track used for closed captioning **/
   _videoElementId: string =
     null; /** ID of the HTMLVideoElement the CC track will be added to **/
@@ -448,8 +64,8 @@ export class Caption {
     null; /** Video element the closed-caption track is added to **/
   message: string = null; /** Caption content **/
   contentSpan: string = null; /** Finalized caption content **/
-  static captionsEnabled: boolean = true;
-  static toggleCaptions(enabled: boolean = !Caption.captionsEnabled): void {
+  static captionsEnabled = true;
+  static toggleCaptions(enabled = !Caption.captionsEnabled): void {
     if (currentCaption && currentCaption.videoElement) {
       currentCaption.setVideoElement(currentCaption.videoElement);
     }
@@ -477,7 +93,7 @@ export class Caption {
     this.videoElement.style.transform = '';
     if (this.videoElement.textTracks.length === 0) {
       this.textTrack = this.videoElement.addTextTrack('subtitles');
-      let cue = new VTTCue(
+      const cue = new VTTCue(
         this.videoElement.currentTime,
         this.videoElement.currentTime + 1,
         this.message
@@ -495,7 +111,7 @@ export class Caption {
    * @return
    */
   set videoElementId(videoElementId: string) {
-    let _videoElement = document.getElementById(videoElementId);
+    const _videoElement = document.getElementById(videoElementId);
     if (_videoElement instanceof HTMLVideoElement) {
       this._videoElementId = videoElementId;
       this.setVideoElement(_videoElement);
@@ -548,7 +164,7 @@ export class Caption {
     // Update Text in `closed-captioning-text`
     this.message = this.truncateMessage(message);
     if (this.textTrack) {
-      var cue: VTTCue;
+      let cue: VTTCue;
       if (this.textTrack.cues.length > 0) {
         cue = this.textTrack.cues[this.textTrack.cues.length - 1] as VTTCue;
       } else {
@@ -596,7 +212,7 @@ export class Caption {
   }
 }
 
-var ssCount = 0;
+let ssCount = 0;
 class SymblSocket {
   id: number = ssCount++;
   userName: string = null; /** User name of the client **/
@@ -656,28 +272,28 @@ class SymblSocket {
     this.config = config;
     this.credentials = credentials;
     this.userName = this.credentials.userName;
-    const self = this;
-    ws.onmessage = (event) => self.onMessage(event);
-    ws.onclose = (event) => self.onClose(event);
-    ws.onerror = (event) => self.onError(event);
+    // const self = this;
+    ws.onmessage = (event) => this.onMessage(event);
+    ws.onclose = (event) => this.onClose(event);
+    ws.onerror = (event) => this.onError(event);
   }
   parseMessage(message: any) {
     const data = JSON.parse(message);
     if (data.type === 'insight_response') {
       data.insights.forEach((insight: any) => {
-        new Insight(insight);
+        new Insight({ ...insight, symblEvents });
       });
       return;
     }
     if (data.type === 'topic_response') {
       data.topics.forEach((topic: any) => {
-        new Topic(topic);
+        new Topic({ ...topic, symblEvents });
       });
       return;
     }
     if (data.type === 'tracker_response') {
       data.trackers.forEach((tracker: any) => {
-        new Tracker(tracker);
+        new Tracker({ ...tracker, symblEvents });
       });
       return;
     }
@@ -694,13 +310,13 @@ class SymblSocket {
       case 'recognition_result':
         // transcription continued
         if (data.message && data.message.isFinal) {
-          new TranscriptItem(data.message);
+          new TranscriptItem({ ...data.message, symblEvents });
         }
         if (currentCaption) {
           currentCaption.updateContent(data.message);
         } else {
           console.info('Creating first caption');
-          currentCaption = new Caption(data.message);
+          currentCaption = new Caption({ ...data.message, currentCaption });
         }
         if (data.message.isFinal && currentCaption) {
           currentCaption.kill(false);
@@ -784,6 +400,7 @@ class SymblSocket {
         const inputData =
           e.inputBuffer.getChannelData(0) || new Float32Array(this.bufferSize);
         const targetBuffer = new Int16Array(inputData.length);
+        // eslint-disable-next-line functional/no-loop-statement
         for (let index = inputData.length; index > 0; index--) {
           targetBuffer[index] = 32767 * Math.min(1, inputData[index]);
         }
