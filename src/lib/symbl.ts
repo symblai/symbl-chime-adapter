@@ -27,7 +27,7 @@ const transcript = new Transcript();
 
 let websocketOpened = false;
 
-export class Caption {
+class Caption {
   data: {
     isFinal: boolean;
     false;
@@ -459,7 +459,7 @@ class SymblSocket {
   }
 }
 
-export class Symbl {
+class Symbl {
   static ACCESS_TOKEN: string =
     null; /** Access token generated using Symbl App ID and Secret **/
   static events: SymblEvents = symblEvents;
@@ -683,3 +683,14 @@ export class Symbl {
     return Promise.resolve(data.url);
   }
 }
+
+export {
+  Insight,
+  SymblEvents,
+  Topic,
+  Tracker,
+  Transcript,
+  TranscriptItem,
+  Symbl,
+  Caption,
+};
