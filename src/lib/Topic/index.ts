@@ -1,8 +1,4 @@
-/* eslint-disable functional/immutable-data */
-/* eslint-disable functional/prefer-readonly-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable functional/no-this-expression */
-/* eslint-disable functional/no-class */
 import { hashCode } from '../utils/hashCode';
 
 export class Topic {

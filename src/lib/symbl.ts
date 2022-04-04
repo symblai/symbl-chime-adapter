@@ -1,13 +1,6 @@
-/* eslint-disable functional/no-throw-statement */
 /* eslint-disable @typescript-eslint/no-inferrable-types */
-/* eslint-disable functional/immutable-data */
-/* eslint-disable functional/functional-parameters */
-/* eslint-disable functional/prefer-readonly-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable functional/no-return-void */
-/* eslint-disable functional/no-this-expression */
-/* eslint-disable functional/no-class */
-/* eslint-disable functional/no-let */
+
 import { Insight } from './Insight';
 import { SymblEvents } from './SymblEvents';
 import { Topic } from './Topic';

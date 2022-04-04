@@ -1,5 +1,4 @@
 export const hashCode = function (s: string): number {
-  // eslint-disable-next-line functional/no-let
   let h = 0,
     i = 0;
   const l = s.length;

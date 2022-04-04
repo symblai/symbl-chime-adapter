@@ -1,11 +1,4 @@
-/* eslint-disable functional/no-throw-statement */
-/* eslint-disable functional/functional-parameters */
-/* eslint-disable functional/prefer-readonly-type */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable functional/no-return-void */
-/* eslint-disable functional/no-this-expression */
-/* eslint-disable functional/no-class */
-/* eslint-disable functional/no-let */
 
 export class SymblEvents {
   captionHandlers: any = []; /** Handlers for the caption events **/

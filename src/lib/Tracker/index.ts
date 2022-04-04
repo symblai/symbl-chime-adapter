@@ -1,7 +1,3 @@
-/* eslint-disable functional/no-this-expression */
-/* eslint-disable functional/prefer-readonly-type */
-/* eslint-disable functional/no-class */
-/* eslint-disable functional/immutable-data */
 import { hashCode } from '../utils/hashCode';
 export class Tracker {
   data: {
