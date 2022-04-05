@@ -2,6 +2,7 @@
 
 import { hashCode } from '../utils/hashCode';
 
+/* It creates an insight object that is used to display the insights in the UI. */
 export class Insight {
   data: {
     assignee: {
@@ -42,6 +43,7 @@ export class Insight {
     data.symblEvents.emit('insight', 'onInsightCreated', this);
   }
 
+  /* The below code is creating a div element with a class of card and a class of card-body. */
   createElement(): HTMLDivElement {
     let type = '';
     let color = 'bg-dark';
@@ -137,12 +139,19 @@ export class Insight {
   set element(element: HTMLDivElement) {
     this._element = element;
   }
+  /**
+   * Add the element to the container and scroll to the bottom of the container
+   * @param {HTMLElement} [container=null] - HTMLElement = null
+   */
   add(container: HTMLElement = null) {
     if (container && this.element) {
       container.append(this.element);
       container.scroll(0, 1000000);
     }
   }
+  /**
+   * Remove the element from the DOM
+   */
   remove() {
     this.element.remove();
   }

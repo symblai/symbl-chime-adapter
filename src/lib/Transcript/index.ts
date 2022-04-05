@@ -44,18 +44,24 @@ export class TranscriptItem {
 export class Transcript {
   lines: Array<TranscriptItem> = []; /** Full transcript with timestamps **/
   // constructor() {}
+
+  /**
+   * Add a line to the transcript
+   * @param {TranscriptItem} transcriptItem - TranscriptItem
+   */
   addLine(transcriptItem: TranscriptItem): void {
     this.lines.unshift(transcriptItem);
   }
+
+  /**
+   * Prints all the lines in the chat
+   * @returns The string of all the messages.
+   */
   printAll(): string {
     let content = '';
     this.lines.map((line) => {
       content = content + `${line.userName}: ${line.message}\n`;
     });
-    // for (let line of this.lines) {
-    //   content = content + `${line.userName}: ${line.message}\n`;
-    // }
-    // console.log('Transcript\n', content);
     return content;
   }
 }

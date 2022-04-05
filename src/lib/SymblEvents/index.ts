@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
+/* The SymblEvents class is a class that allows you to subscribe to Symbl events */
 export class SymblEvents {
   captionHandlers: any = []; /** Handlers for the caption events **/
   insightHandlers: any = []; /** Handlers for the insight events **/
@@ -8,6 +9,12 @@ export class SymblEvents {
   trackerHandlers: any = []; /** Handlers for the tracker events **/
 
   // constructor() {}
+
+  /**
+   * *Get the array of handlers for the given handler type.*
+   * @param {string} handlerType - The type of handler.
+   * @returns An array of functions.
+   */
   getHandlerArr(handlerType: string): any {
     let handlerArr;
     if (handlerType === 'caption') {
@@ -25,6 +32,7 @@ export class SymblEvents {
     }
     return handlerArr;
   }
+
   /**
    * Subscribe to one of three possible insight handlers
    * @param  type    handler type - can be `caption`, `insight`, and `transcript`
@@ -49,6 +57,13 @@ export class SymblEvents {
       throw new Error(`Error subscribing to SymblEvent type ${type} ${err}`);
     }
   }
+
+  /**
+   * * Emit an event.
+   * @param {string} type - The type of event to emit.
+   * @param {string} event - The name of the event to emit.
+   * @param {any[]} args - any[]
+   */
   emit(type: string, event: string, ...args: any[]) {
     try {
       const handlerArr = this.getHandlerArr(type);

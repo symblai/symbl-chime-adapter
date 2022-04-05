@@ -23,9 +23,14 @@ export class Tracker {
       }
     ];
   } = null;
+
   id: string = null; /** Insight ID specific to the object **/
   _element: HTMLDivElement = null;
 
+  /**
+   * It creates a new instance of the Tracker class.
+   * @param {any} data - the data that was passed to the constructor.
+   */
   constructor(data: any) {
     this.data = null;
     this.id = null; /** Insight ID specific to the object **/
@@ -35,6 +40,11 @@ export class Tracker {
     //   console.info('Creating Tracker', data, trackers.includes(data));
     data.symblEvents.emit('tracker', 'onTrackerCreated', this);
   }
+
+  /**
+   * Create an HTML element with the name of the tab
+   * @returns The `createElement()` method returns a `HTMLElement` object.
+   */
   createElement(): HTMLElement {
     const name = this.data.name;
 

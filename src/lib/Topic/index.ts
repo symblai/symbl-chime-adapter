@@ -19,6 +19,7 @@ export class Topic {
     score: number /** ID of the topic **/;
     type: string /** Type of the topic - action_item, question, follow_up **/;
   } = null;
+
   id: string = null; /** Insight ID specific to the object **/
   _element: HTMLSpanElement = null;
 
@@ -31,6 +32,11 @@ export class Topic {
     //   console.info('Creating Topic', data, topics.includes(data));
     data.symblEvents.emit('topic', 'onTopicCreated', this);
   }
+
+  /**
+   * Create a span element with the text of the topic and the id of the topic
+   * @returns The `createElement()` method returns an HTML element.
+   */
   createElement(): HTMLSpanElement {
     const content = this.data.phrases;
 

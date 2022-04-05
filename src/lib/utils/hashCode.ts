@@ -1,3 +1,8 @@
+/**
+ * Given a string, return the hash code of the string
+ * @param {string} s - The string to hash.
+ * @returns The hash code of the string.
+ */
 export const hashCode = function (s: string): number {
   let h = 0,
     i = 0;
