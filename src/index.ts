@@ -1,1 +1,1 @@
-export * from './lib/symbl';
+export * from './lib';
