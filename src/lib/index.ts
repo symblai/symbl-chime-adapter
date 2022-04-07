@@ -324,6 +324,10 @@ class SymblSocket {
         break;
     }
   }
+  /**
+   * Set the conversation ID
+   * @param conversationId - The ID of the conversation.
+   */
   set conversationId(conversationId) {
     this._conversationId = conversationId;
     console.info('Conversation ID set ', conversationId);
@@ -380,34 +384,63 @@ class SymblSocket {
       })
     );
     const handleSuccess = (stream: any) => {
-      const AudioContext = window.AudioContext;
-      const context = new AudioContext();
-      const source = context.createMediaStreamSource(stream);
-      const processor = context.createScriptProcessor(1024, 1, 1);
-      this.gainNode = context.createGain();
-      source.connect(this.gainNode);
-      this.gainNode.connect(processor);
-      processor.connect(context.destination);
-      processor.onaudioprocess = (e: any) => {
-        // convert to 16-bit payload
-        const inputData =
-          e.inputBuffer.getChannelData(0) || new Float32Array(this.bufferSize);
-        const targetBuffer = new Int16Array(inputData.length);
-        // eslint-disable-next-line functional/no-loop-statement
-        for (let index = inputData.length; index > 0; index--) {
-          targetBuffer[index] = 32767 * Math.min(1, inputData[index]);
-        }
-        // Send to websocket
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(targetBuffer.buffer);
-        }
-      };
+      /**
+       * creating audioWorklet.
+       * It is used to supply custom audio processing scripts that execute in a separate thread to provide very low latency audio processing.
+       */
+      const audioWorklet = new AudioWorklet();
+
+      /**
+       * Adding the script/Module to audioWorklet and then, proceeding with the further steps.
+       *
+       * Q: why .js & not .ts ?
+       * Because its hardcoded , after compiling it to JS , we will get the .js file, which will get utilized.
+       */
+      audioWorklet.addModule('/linear-audio-processor.js').then(() => {
+        const AudioContext = window.AudioContext;
+        const context = new AudioContext();
+
+        /**
+         * createMediaStreamSource: is used to create a new MediaStreamAudioSourceNode object, given a media stream, the audio from which can then be played and manipulated.
+         */
+        const source = context.createMediaStreamSource(stream);
+
+        /* It creates a new AudioWorkletNode. which does the actual audio processing in a Web Audio rendering thread. */
+        const processorNode = new AudioWorkletNode(
+          context,
+          'linear-audio-processor'
+        );
+
+        /**
+         * gainNode: represents a change in volume. It is an AudioNode audio-processing module that causes a given gain to be applied to the input data before its propagation to the output.
+         */
+        this.gainNode = context.createGain();
+
+        /**
+         * Connecting all the three different nodes.
+         */
+        source.connect(this.gainNode);
+        this.gainNode.connect(processorNode);
+        processorNode.connect(context.destination);
+
+        processorNode.port.onmessage = (event: any) => {
+          // Send to websocket
+          if (ws.readyState === WebSocket.OPEN) {
+            ws.send(event.data.buffer);
+          }
+        };
+      });
     };
 
     navigator.mediaDevices
       .getUserMedia({ audio: true, video: false })
       .then(handleSuccess);
+
+    navigator.mediaDevices.ondevicechange = () => {
+      // implement device change logic.
+    };
   }
+
   mute(isMuted: boolean) {
     if (this.gainNode) {
       this.gainNode.gain.value = isMuted ? 0 : 1;
