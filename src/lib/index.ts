@@ -384,52 +384,53 @@ class SymblSocket {
       })
     );
     const handleSuccess = (stream: any) => {
-      /**
-       * creating audioWorklet.
-       * It is used to supply custom audio processing scripts that execute in a separate thread to provide very low latency audio processing.
-       */
-      const audioWorklet = new AudioWorklet();
-
+      const AudioContext = window.AudioContext;
+      const context = new AudioContext();
       /**
        * Adding the script/Module to audioWorklet and then, proceeding with the further steps.
        *
        * Q: why .js & not .ts ?
        * Because its hardcoded , after compiling it to JS , we will get the .js file, which will get utilized.
+       *
+       * NOTE:
+       *  Please check the filePath, if using it in different environment, For react this ...processor.js file should be in public folder.
        */
-      audioWorklet.addModule('/linear-audio-processor.js').then(() => {
-        const AudioContext = window.AudioContext;
-        const context = new AudioContext();
+      context.audioWorklet
+        .addModule('/linear-audio-processor.js')
+        .then(() => {
+          /**
+           * createMediaStreamSource: is used to create a new MediaStreamAudioSourceNode object, given a media stream, the audio from which can then be played and manipulated.
+           */
+          const source = context.createMediaStreamSource(stream);
 
-        /**
-         * createMediaStreamSource: is used to create a new MediaStreamAudioSourceNode object, given a media stream, the audio from which can then be played and manipulated.
-         */
-        const source = context.createMediaStreamSource(stream);
+          /* It creates a new AudioWorkletNode. which does the actual audio processing in a Web Audio rendering thread. */
+          const processorNode = new AudioWorkletNode(
+            context,
+            'linear-audio-processor'
+          );
 
-        /* It creates a new AudioWorkletNode. which does the actual audio processing in a Web Audio rendering thread. */
-        const processorNode = new AudioWorkletNode(
-          context,
-          'linear-audio-processor'
+          /**
+           * gainNode: represents a change in volume. It is an AudioNode audio-processing module that causes a given gain to be applied to the input data before its propagation to the output.
+           */
+          this.gainNode = context.createGain();
+
+          /**
+           * Connecting all the three different nodes.
+           */
+          source.connect(this.gainNode);
+          this.gainNode.connect(processorNode);
+          processorNode.connect(context.destination);
+
+          processorNode.port.onmessage = (event: any) => {
+            // Send to websocket
+            if (this.ws.readyState === WebSocket.OPEN) {
+              this.ws.send(event.data.buffer);
+            }
+          };
+        })
+        .catch((error) =>
+          console.log('Failed to create audio processing topology', error)
         );
-
-        /**
-         * gainNode: represents a change in volume. It is an AudioNode audio-processing module that causes a given gain to be applied to the input data before its propagation to the output.
-         */
-        this.gainNode = context.createGain();
-
-        /**
-         * Connecting all the three different nodes.
-         */
-        source.connect(this.gainNode);
-        this.gainNode.connect(processorNode);
-        processorNode.connect(context.destination);
-
-        processorNode.port.onmessage = (event: any) => {
-          // Send to websocket
-          if (ws.readyState === WebSocket.OPEN) {
-            ws.send(event.data.buffer);
-          }
-        };
-      });
     };
 
     navigator.mediaDevices
