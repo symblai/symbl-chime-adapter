@@ -59,7 +59,7 @@ export class Transcript {
    */
   printAll(): string {
     let content = '';
-    this.lines.map((line) => {
+    this.lines.forEach((line) => {
       content = content + `${line.userName}: ${line.message}\n`;
     });
     return content;

@@ -622,9 +622,9 @@ class Symbl {
   /**
    * Disconnect the Symbl adapter
    */
-  disconnect(): void {
+  async disconnect(): Promise<void> {
     try {
-      symblSocket.close();
+      await symblSocket.close();
     } catch (err) {
       console.error('Error on Symbl Disconnect', err);
     }
@@ -641,11 +641,7 @@ class Symbl {
     }
     if (ws) {
       console.log('SymblSocket already exists', SymblSocket);
-      if (symblSocket && symblSocket.requestStarted) {
-        return;
-      } else {
-        return;
-      }
+      return;
     }
     if (websocketOpened) {
       return;
