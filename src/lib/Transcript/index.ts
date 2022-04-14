@@ -1,4 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+
+/* The TranscriptItem class is used to create a transcript item object that contains the message, user
+name, user id, and timestamp of the transcript item */
 export class TranscriptItem {
   message: string = null; /** Content of the transcript **/
   userName: string = null; /** Name of the transcript speaker **/
@@ -41,9 +44,9 @@ export class TranscriptItem {
   }
 }
 
+/* The Transcript class is a container for TranscriptItems */
 export class Transcript {
   lines: Array<TranscriptItem> = []; /** Full transcript with timestamps **/
-  // constructor() {}
 
   /**
    * Add a line to the transcript

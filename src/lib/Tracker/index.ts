@@ -1,4 +1,5 @@
 import { hashCode } from '../utils/hashCode';
+/* It creates a new instance of the Tracker class, which is used to represent the Trackers in the conversation, offered by symbl */
 export class Tracker {
   data: {
     name: string;

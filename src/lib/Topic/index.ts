@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { hashCode } from '../utils/hashCode';
 
+/* `Topic` is a class that represents a topic in a conversation */
 export class Topic {
   data: {
     id: string;

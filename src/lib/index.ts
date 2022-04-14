@@ -20,6 +20,7 @@ const transcript = new Transcript();
 
 let websocketOpened = false;
 
+/* Caption is a class that represents a caption */
 class Caption {
   data: {
     isFinal: boolean;
@@ -206,6 +207,7 @@ class Caption {
 }
 
 let ssCount = 0;
+/* It's a class that creates a websocket connection to a server, and sends audio data to the server */
 class SymblSocket {
   id: number = ssCount++;
   userName: string = null; /** User name of the client **/
@@ -486,6 +488,7 @@ class SymblSocket {
   }
 }
 
+/* Symbl is a class that connects to the Symbl API and provides real-time insights. */
 class Symbl {
   static ACCESS_TOKEN: string =
     null; /** Access token generated using Symbl App ID and Secret **/
