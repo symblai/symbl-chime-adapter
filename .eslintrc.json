@@ -11,8 +11,7 @@
     "plugin:@typescript-eslint/recommended",
     "plugin:import/typescript",
     "plugin:functional/lite",
-    "prettier",
-    "prettier/@typescript-eslint"
+    "prettier"
   ],
   "globals": { "BigInt": true, "console": true, "WebAssembly": true },
   "rules": {
@@ -29,6 +28,14 @@
     "sort-imports": [
       "error",
       { "ignoreDeclarationSort": true, "ignoreCase": true }
-    ]
+    ],
+    "functional/no-class":"Off",
+    "functional/no-let":"Off",
+    "functional/no-throw-statement":"Off",
+    "functional/no-this-expression":"Off",
+    "functional/functional-parameters":"Off",
+    "functional/immutable-data":"Off",
+    "functional/no-return-void":"Off",
+    "functional/prefer-readonly-type":"Off"
   }
 }
