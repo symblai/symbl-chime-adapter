@@ -30,7 +30,6 @@ export class Topic {
     this._element = null;
     this.data = data;
     this.id = '' + hashCode(this.data.phrases);
-    //   console.info('Creating Topic', data, topics.includes(data));
     data.symblEvents.emit('topic', 'onTopicCreated', this);
   }
 

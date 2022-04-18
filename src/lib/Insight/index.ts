@@ -39,7 +39,6 @@ export class Insight {
   constructor(data: any) {
     this.data = data;
     this.id = '' + hashCode(data.text + data.confidence);
-    //   console.info('Creating insight', data, insights.includes(data));
     data.symblEvents.emit('insight', 'onInsightCreated', this);
   }
 

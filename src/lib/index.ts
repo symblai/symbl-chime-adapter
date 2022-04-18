@@ -273,22 +273,23 @@ class SymblSocket {
     ws.onerror = (event) => this.onError(event);
   }
   parseMessage(message: any) {
+    let temp;
     const data = JSON.parse(message);
     if (data.type === 'insight_response') {
       data.insights.forEach((insight: any) => {
-        new Insight({ ...insight, symblEvents });
+        temp = new Insight({ ...insight, symblEvents });
       });
       return;
     }
     if (data.type === 'topic_response') {
       data.topics.forEach((topic: any) => {
-        new Topic({ ...topic, symblEvents });
+        temp = new Topic({ ...topic, symblEvents });
       });
       return;
     }
     if (data.type === 'tracker_response') {
       data.trackers.forEach((tracker: any) => {
-        new Tracker({ ...tracker, symblEvents });
+        temp = new Tracker({ ...tracker, symblEvents });
       });
       return;
     }
@@ -305,7 +306,7 @@ class SymblSocket {
       case 'recognition_result':
         // transcription continued
         if (data.message && data.message.isFinal) {
-          new TranscriptItem({ ...data.message, symblEvents });
+          temp = new TranscriptItem({ ...data.message, symblEvents });
         }
         if (currentCaption) {
           currentCaption.updateContent(data.message);

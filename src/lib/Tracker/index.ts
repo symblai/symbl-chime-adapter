@@ -38,7 +38,6 @@ export class Tracker {
     this._element = null;
     this.data = data;
     this.id = '' + hashCode(this.data.name);
-    //   console.info('Creating Tracker', data, trackers.includes(data));
     data.symblEvents.emit('tracker', 'onTrackerCreated', this);
   }
 
