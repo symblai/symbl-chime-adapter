@@ -408,7 +408,7 @@ export class Tracker {
 var websocketOpened: boolean = false;
 export class Caption {
   data: {
-    isFinal: boolean, false
+    isFinal: boolean,
     payload: {
       raw: {
         alternatives: [{
